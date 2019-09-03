@@ -113,6 +113,8 @@ int main(int argc, char** argv)
   }
 
   auto inputImageFile = std::string(argv[1]);
+  auto outputImageFile = std::string(argv[2]);
+
   auto reader_1 = itk::ImageFileReader< ImageTypeFloat3D >::New();
   reader_1->SetFileName(inputImageFile);
   try
@@ -126,25 +128,21 @@ int main(int argc, char** argv)
   }
   
   auto inputImage = reader_1->GetOutput();
-  auto inputImage_rai = inputImage;
-  inputImage_rai->DisconnectPipeline();
-  std::string original_orientation;
+  std::pair< std::string, ImageTypeFloat3D::Pointer > output;
   try
   {
-    auto output = GetImageOrientation(inputImage);
-    original_orientation = output.first;
-    inputImage_rai = output.second;
+    output = GetImageOrientation(inputImage);
   }
   catch (const std::exception&e)
   {
     std::cerr << "Couldn't orient the image properly: " << e.what() << "\n";
     return EXIT_FAILURE;
   }
-  std::cout << "Original Orientation: " << original_orientation << "\n";
+  std::cout << "Original Orientation: " << output.first << "\n";
   
-  auto outputImageFile = std::string(argv[2]);
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
   writer_1->SetFileName(outputImageFile);
+  writer_1->SetInput(output.second);
   try
   {
     writer_1->Update();
@@ -162,12 +160,23 @@ int main(int argc, char** argv)
 
   auto inputImage_rai_verify = reader_2->GetOutput();
 
-  auto output_verify = GetImageOrientation(inputImage_rai_verify, original_orientation);
+  auto output_verify = GetImageOrientation(inputImage_rai_verify, output.first);
   auto inputImage_rai_verify_original = output_verify.second; 
 
   std::cout << "Original Image Properties:\n";
-  std::cout << inputImage << "\n";
-  //std::cout <<  inputImage->GetOrigin() << "\n" << inputImage->GetSpacing() << "\"
+  std::cout << "\tOrigin: " << inputImage->GetOrigin() << "\n" 
+    //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
+    ;
+
+  std::cout << "Oriented Image [ORIGINAL] Properties:\n";
+  std::cout << "\tOrigin: " << inputImage_rai_verify_original->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
+    ;
+
+  std::cout << "Oriented Image [RAI] Properties:\n";
+  std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage_rai_verify->GetDirection() << "\n"
+    ;
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
