@@ -8,4 +8,8 @@ This project is to check an issue with ITK's OrientImageFilter](https://itk.org/
 - C++ Compiler
 - ITK 
 
-## 
+## Usage
+
+```powershell
+ITKOrientImageFilter ${inputImageFile_nifti} ${outputImageFile_nifti}
+```
