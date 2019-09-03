@@ -139,8 +139,9 @@ int main(int argc, char** argv)
   }
   std::cout << "Original Orientation: " << original_orientation << "\n";
   
+  auto outputImageFile = std::string(argv[2]);
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
-  writer_1->SetFileName(std::string(argv[2]));
+  writer_1->SetFileName(outputImageFile);
   try
   {
     writer_1->Update();
@@ -151,6 +152,9 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
+  auto reader_2 = itk::ImageFileReader< ImageTypeFloat3D >::New();
+  reader_2->SetFileName(outputImageFile);
+  reader_2->Update(); // we know that the image at this stage 'should' be valid
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
