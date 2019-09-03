@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <iostream>
+
 #include "itkImage.h"
 #include "itkOrientImageFilter.h"
 #include "itkImageFileReader.h"
@@ -152,9 +155,19 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
+  std::cout << "Started verification.\n";
   auto reader_2 = itk::ImageFileReader< ImageTypeFloat3D >::New();
   reader_2->SetFileName(outputImageFile);
   reader_2->Update(); // we know that the image at this stage 'should' be valid
+
+  auto inputImage_rai_verify = reader_2->GetOutput();
+
+  auto output_verify = GetImageOrientation(inputImage_rai_verify, original_orientation);
+  auto inputImage_rai_verify_original = output_verify.second; 
+
+  std::cout << "Original Image Properties:\n";
+  std::cout << inputImage << "\n";
+  //std::cout <<  inputImage->GetOrigin() << "\n" << inputImage->GetSpacing() << "\"
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
