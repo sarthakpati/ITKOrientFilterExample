@@ -119,13 +119,19 @@ int main(int argc, char** argv)
   }
   
   auto inputImage = reader_1->GetOutput();
+  auto inputImage_rai = inputImage;
+  inputImage_rai->DisconnectPipeline();
+  std::string original_orientation;
   try
   {
-
+    auto output = GetImageOrientation(inputImage);
+    original_orientation = output.first;
+    inputImage_rai = output.second;
   }
-  catch (const std::exception&)
+  catch (const std::exception&e)
   {
-
+    std::cerr << "Couldn't orient the image properly: " << e.what() << "\n";
+    return EXIT_FAILURE;
   }
 
 
