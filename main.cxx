@@ -137,9 +137,20 @@ int main(int argc, char** argv)
     std::cerr << "Couldn't orient the image properly: " << e.what() << "\n";
     return EXIT_FAILURE;
   }
+  std::cout << "Original Orientation: " << original_orientation << "\n";
   
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
-  writer_1->SetFileName()
+  writer_1->SetFileName(std::string(argv[2]));
+  try
+  {
+    writer_1->Update();
+  }
+  catch (const std::exception&e)
+  {
+    std::cerr << "Couldn't write the image: " << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
+
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
