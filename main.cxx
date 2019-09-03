@@ -168,14 +168,14 @@ int main(int argc, char** argv)
     //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
     ;
 
-  std::cout << "Oriented Image [ORIGINAL] Properties:\n";
-  std::cout << "\tOrigin: " << inputImage_rai_verify_original->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
-    ;
-
   std::cout << "Oriented Image [RAI] Properties:\n";
   std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
     //<< "\tDirection Cosines: " << inputImage_rai_verify->GetDirection() << "\n"
+    ;
+
+  std::cout << "Oriented Image [ORIGINAL] Properties:\n";
+  std::cout << "\tOrigin: " << inputImage_rai_verify_original->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
     ;
 
   std::cout << "Finished successfully.\n";
