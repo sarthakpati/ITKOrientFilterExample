@@ -102,8 +102,12 @@ std::pair< std::string, typename TImageType::Pointer > GetImageOrientation(const
 
 int main(int argc, char** argv)
 {
-  std::cout << "Usage:\n\n" <<
-    "ITKOrientFilterExample ${inputImageFile_nifti}\n";
+  if (argc < 2 || argc > 3)
+  {
+    std::cout << "Usage:\n\n" <<
+      "ITKOrientFilterExample ${inputImageFile_nifti} ${outputImageFile_nifti}\n";
+    return EXIT_FAILURE;
+  }
 
   auto inputImageFile = std::string(argv[1]);
   auto reader_1 = itk::ImageFileReader< ImageTypeFloat3D >::New();
@@ -133,9 +137,9 @@ int main(int argc, char** argv)
     std::cerr << "Couldn't orient the image properly: " << e.what() << "\n";
     return EXIT_FAILURE;
   }
-
-
+  
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
+  writer_1->SetFileName()
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
