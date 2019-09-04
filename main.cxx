@@ -70,16 +70,15 @@ std::pair< std::string, typename TImageType::Pointer > GetImageOrientation(const
   orientationMap["AIL"] = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_AIL;
   orientationMap["ASL"] = itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_ASL;
 
-  auto orientFilter = itk::OrientImageFilter< TImageType, TImageType >::New();
-  orientFilter->SetInput(inputImage);
-  orientFilter->UseImageDirectionOn();
-  orientFilter->SetDirectionTolerance(0);
-  orientFilter->SetCoordinateTolerance(0);
-
   auto desiredOrientation_wrap = desiredOrientation;
   std::transform(desiredOrientation_wrap.begin(), desiredOrientation_wrap.end(), desiredOrientation_wrap.begin(), ::toupper);
 
   // set the desired orientation and update
+  auto orientFilter = itk::OrientImageFilter< TImageType, TImageType >::New();
+  orientFilter->SetInput(inputImage);
+  orientFilter->UseImageDirectionOn();
+  //orientFilter->SetDirectionTolerance(0);
+  //orientFilter->SetCoordinateTolerance(0);
   orientFilter->SetDesiredCoordinateOrientation(orientationMap[desiredOrientation_wrap]);
   orientFilter->Update();
   auto outputImage = orientFilter->GetOutput();
@@ -171,9 +170,14 @@ int main(int argc, char** argv)
     //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
     ;
 
-  std::cout << "Oriented Image [RAI] Properties:\n";
+  std::cout << "Oriented Image [RAI] Raw Properties:\n";
+  std::cout << "\tOrigin: " << output.second->GetOrigin() << "\n"
+    << "\tDirection Cosines: \n" << output.second->GetDirection() << "\n"
+    ;
+
+  std::cout << "Oriented Image [RAI] FromFile Properties:\n";
   std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: " << inputImage_rai_verify->GetDirection() << "\n"
+    << "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
     ;
 
   std::cout << "Re-Oriented Image [LPI] - from Raw RAI Properties:\n";
@@ -181,7 +185,7 @@ int main(int argc, char** argv)
     //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
     ;
 
-  std::cout << "Re-Oriented Image [LPI] - from Written RAI Properties:\n";
+  std::cout << "Re-Oriented Image [LPI] - from FromFile RAI Properties:\n";
   std::cout << "\tOrigin: " << inputImage_rai_verify_original_fromFile->GetOrigin() << "\n"
     //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
     ;
