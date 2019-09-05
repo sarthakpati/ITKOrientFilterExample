@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 {
   if (argc < 2 || argc > 3)
   {
-    std::cout << "Usage:\n\n" <<
+    std::cout << "Usage:\n\n" << 
       "ITKOrientFilterExample ${inputImageFile_nifti} ${outputImageFile_nifti}\n";
     return EXIT_FAILURE;
   }
@@ -171,7 +171,10 @@ int main(int argc, char** argv)
   }
   std::cout << "Original Orientation: " << output.first << "\n";
   
-  outputImageFile = "oriented.mha";
+  //outputImageFile = "oriented.img"; // doesn't work
+  //outputImageFile = "oriented.nii.gz"; // doesn't work
+  //outputImageFile = "oriented.mha"; // works
+  outputImageFile = "oriented.nrrd"; // works
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
   writer_1->SetFileName(outputImageFile);
   writer_1->SetInput(output.second);
