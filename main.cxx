@@ -102,37 +102,37 @@ std::pair< std::string, typename TImageType::Pointer > GetImageOrientation(const
   return std::make_pair(originalOrientation, outputImage);
 }
 
-/// code from mihail.isakov
-template<typename T> 
-bool orient_filter(
-  const typename T::Pointer & image,
-  typename T::Pointer & out_image,
-  int &originalOrientation,
-  int f)
-{
-  if (image.IsNull()) return false;
-  typedef itk::OrientImageFilter<T, T> OrientImageFilterType;
-  typename OrientImageFilterType::Pointer filter = OrientImageFilterType::New();
-  try
-  {
-    filter->SetInput(image);
-    filter->UseImageDirectionOn();
-    filter->SetDesiredCoordinateOrientation(
-      static_cast<itk::SpatialOrientation::ValidCoordinateOrientationFlags>(f));
-    filter->Update();
-    out_image = filter->GetOutput();
-  }
-  catch (itk::ExceptionObject & ex)
-  {
-    std::cout << ex.GetDescription() << std::endl;
-    return false;
-  }
-  if (out_image.IsNotNull()) out_image->DisconnectPipeline();
-  else return false;
-  
-  originalOrientation = filter->GetGivenCoordinateOrientation();
-  return true;
-}
+///// code from mihail.isakov
+//template<typename T> 
+//bool orient_filter(
+//  const typename T::Pointer & image,
+//  typename T::Pointer & out_image,
+//  int &originalOrientation,
+//  int f)
+//{
+//  if (image.IsNull()) return false;
+//  typedef itk::OrientImageFilter<T, T> OrientImageFilterType;
+//  typename OrientImageFilterType::Pointer filter = OrientImageFilterType::New();
+//  try
+//  {
+//    filter->SetInput(image);
+//    filter->UseImageDirectionOn();
+//    filter->SetDesiredCoordinateOrientation(
+//      static_cast<itk::SpatialOrientation::ValidCoordinateOrientationFlags>(f));
+//    filter->Update();
+//    out_image = filter->GetOutput();
+//  }
+//  catch (itk::ExceptionObject & ex)
+//  {
+//    std::cout << ex.GetDescription() << std::endl;
+//    return false;
+//  }
+//  if (out_image.IsNotNull()) out_image->DisconnectPipeline();
+//  else return false;
+//  
+//  originalOrientation = filter->GetGivenCoordinateOrientation();
+//  return true;
+//}
 
 int main(int argc, char** argv)
 {
@@ -171,6 +171,7 @@ int main(int argc, char** argv)
   }
   std::cout << "Original Orientation: " << output.first << "\n";
   
+  outputImageFile = "oriented.mha";
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
   writer_1->SetFileName(outputImageFile);
   writer_1->SetInput(output.second);
@@ -222,165 +223,58 @@ int main(int argc, char** argv)
     //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
     ;
 
-  /// testing mihail's code
-  ImageTypeFloat3D::Pointer orientedImage_rai_m, orientedImage_rai_lpi_m, orientedImage_rai_lpi_fromFile_m;
-  int originalOrintation_m, shouldGetRAI;
-  auto temp1 = orient_filter< ImageTypeFloat3D >(inputImage, orientedImage_rai_m, originalOrintation_m, itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-  auto temp2 = orient_filter< ImageTypeFloat3D >(orientedImage_rai_m, orientedImage_rai_lpi_m, shouldGetRAI, originalOrintation_m);
+  ///// testing mihail's code
+  //ImageTypeFloat3D::Pointer orientedImage_rai_m, orientedImage_rai_lpi_m, orientedImage_rai_lpi_fromFile_m;
+  //int originalOrintation_m, shouldGetRAI;
+  //auto temp1 = orient_filter< ImageTypeFloat3D >(inputImage, orientedImage_rai_m, originalOrintation_m, itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+  //auto temp2 = orient_filter< ImageTypeFloat3D >(orientedImage_rai_m, orientedImage_rai_lpi_m, shouldGetRAI, originalOrintation_m);
 
-  auto writer_2 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
-  writer_2->SetFileName("test_m.nii.gz");
-  writer_2->SetInput(orientedImage_rai_m);
-  try
-  {
-    writer_2->Update();
-  }
-  catch (const std::exception&e)
-  {
-    std::cerr << "Couldn't write the image: " << e.what() << "\n";
-    return EXIT_FAILURE;
-  }
+  //auto writer_2 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
+  //writer_2->SetFileName("test_m.nii.gz");
+  //writer_2->SetInput(orientedImage_rai_m);
+  //try
+  //{
+  //  writer_2->Update();
+  //}
+  //catch (const std::exception&e)
+  //{
+  //  std::cerr << "Couldn't write the image: " << e.what() << "\n";
+  //  return EXIT_FAILURE;
+  //}
 
-  auto reader_3 = itk::ImageFileReader< ImageTypeFloat3D >::New();
-  reader_3->SetFileName("test_m.nii.gz");
-  reader_3->Update(); // we know that the image at this stage 'should' be valid
+  //auto reader_3 = itk::ImageFileReader< ImageTypeFloat3D >::New();
+  //reader_3->SetFileName("test_m.nii.gz");
+  //reader_3->Update(); // we know that the image at this stage 'should' be valid
 
-  auto temp3 = orient_filter< ImageTypeFloat3D >(reader_3->GetOutput(), orientedImage_rai_lpi_fromFile_m, shouldGetRAI, originalOrintation_m);
+  //auto temp3 = orient_filter< ImageTypeFloat3D >(reader_3->GetOutput(), orientedImage_rai_lpi_fromFile_m, shouldGetRAI, originalOrintation_m);
 
-  std::cout << "[M] Original Image Properties:\n";
-  std::cout << "\tOrigin: " << inputImage->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
-    ;
+  //std::cout << "[M] Original Image Properties:\n";
+  //std::cout << "\tOrigin: " << inputImage->GetOrigin() << "\n"
+  //  //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
+  //  ;
 
-  std::cout << "[M] Oriented Image [RAI] Raw Properties:\n";
-  std::cout << "\tOrigin: " << orientedImage_rai_m->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: \n" << orientedImage_rai_m->GetDirection() << "\n"
-    ;
+  //std::cout << "[M] Oriented Image [RAI] Raw Properties:\n";
+  //std::cout << "\tOrigin: " << orientedImage_rai_m->GetOrigin() << "\n"
+  //  //<< "\tDirection Cosines: \n" << orientedImage_rai_m->GetDirection() << "\n"
+  //  ;
 
-  std::cout << "[M] Oriented Image [RAI] FromFile Properties:\n";
-  std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
-    //<< "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
-    ;
+  //std::cout << "[M] Oriented Image [RAI] FromFile Properties:\n";
+  //std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
+  //  //<< "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
+  //  ;
 
-  std::cout << "[M] Re-Oriented Image [LPI] - from Raw RAI Properties:\n";
-  std::cout << "\tOrigin: " << reader_3->GetOutput()->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
-    ;
+  //std::cout << "[M] Re-Oriented Image [LPI] - from Raw RAI Properties:\n";
+  //std::cout << "\tOrigin: " << reader_3->GetOutput()->GetOrigin() << "\n"
+  //  //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
+  //  ;
 
-  std::cout << "[M] Re-Oriented Image [LPI] - from FromFile RAI Properties:\n";
-  std::cout << "\tOrigin: " << orientedImage_rai_lpi_fromFile_m->GetOrigin() << "\n"
-    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
-    ;
+  //std::cout << "[M] Re-Oriented Image [LPI] - from FromFile RAI Properties:\n";
+  //std::cout << "\tOrigin: " << orientedImage_rai_lpi_fromFile_m->GetOrigin() << "\n"
+  //  //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
+  //  ;
 
-  /// testing mihail's code
+  ///// testing mihail's code
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
 }
-
-/// code from mihail.isakov
-//template<typename T> bool orient_filter(
-//  const typename T::Pointer & image,
-//  typename T::Pointer & out_image,
-//  int &originalOrientation,
-//  int f)
-//{
-//  if (image.IsNull()) return false;
-//  typedef itk::OrientImageFilter<T, T> OrientImageFilterType;
-//  typename OrientImageFilterType::Pointer filter = OrientImageFilterType::New();
-//  try
-//  {
-//    filter->SetInput(image);
-//    filter->UseImageDirectionOn();
-//    filter->SetDesiredCoordinateOrientation(
-//      static_cast<itk::SpatialOrientation::ValidCoordinateOrientationFlags>(f));
-//    filter->Update();
-//    out_image = filter->GetOutput();
-//  }
-//  catch (itk::ExceptionObject & ex)
-//  {
-//    std::cout << ex.GetDescription() << std::endl;
-//    return false;
-//  }
-//  if (out_image.IsNotNull()) out_image->DisconnectPipeline();
-//  else return false;
-//  
-//  originalOrientation = filter->GetGivenCoordinateOrientation();
-//  return true;
-//}
-//
-//int main(int argc, char ** argv)
-//{
-//  typedef itk::Image<float, 3> ImageType;
-//  typedef itk::ImageFileReader<ImageType> ReaderType;
-//  typedef itk::ImageFileWriter<ImageType> WriterType;
-//  ImageType::Pointer inputLPI;
-//  ImageType::Pointer outputRAI;
-//  ImageType::Pointer outputLPI;
-//  ImageType::Pointer reopenedRAI;
-//  ImageType::Pointer reopenedLPI;
-//  ReaderType::Pointer reader = ReaderType::New();
-//  reader->SetFileName(argv[1]);
-//  try
-//  {
-//    reader->Update();
-//    inputLPI = reader->GetOutput();
-//  }
-//  catch (itk::ExceptionObject & ex)
-//  {
-//    std::cout << ex.GetDescription() << std::endl;
-//    return 1;
-//  }
-//  std::cout << "original LPI " << inputLPI->GetOrigin()
-//    << std::endl;
-//  int originalOrientation = 0, temp = 0;
-//  orient_filter<ImageType>(
-//    inputLPI,
-//    outputRAI, originalOrientation,
-//    (int)itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-//  std::cout << "filter output LPI->RAI " << outputRAI->GetOrigin()
-//    << std::endl;
-//  orient_filter<ImageType>(
-//    outputRAI,
-//    outputLPI, temp,
-//    (int)originalOrientation);
-//  std::cout << "filter output RAI->LPI " << outputLPI->GetOrigin()
-//    << std::endl;
-//  WriterType::Pointer writer1 = WriterType::New();
-//  WriterType::Pointer writer2 = WriterType::New();
-//  writer1->SetInput(outputRAI);
-//  writer1->SetFileName("outputRAI.nii.gz");
-//  writer2->SetInput(outputRAI);
-//  writer2->SetFileName("outputLPI.nii.gz");
-//  try
-//  {
-//    writer1->Update();
-//    writer2->Update();
-//  }
-//  catch (itk::ExceptionObject & ex)
-//  {
-//    std::cout << ex.GetDescription() << std::endl;
-//    return 1;
-//  }
-//  ReaderType::Pointer reader1 = ReaderType::New();
-//  ReaderType::Pointer reader2 = ReaderType::New();
-//  reader1->SetFileName("outputRAI.nii.gz");
-//  reader2->SetFileName("outputLPI.nii.gz");
-//  try
-//  {
-//    reader1->Update();
-//    reader2->Update();
-//    reopenedRAI = reader1->GetOutput();
-//    reopenedLPI = reader2->GetOutput();
-//  }
-//  catch (itk::ExceptionObject & ex)
-//  {
-//    std::cout << ex.GetDescription() << std::endl;
-//    return 1;
-//  }
-//  std::cout << "re-opened LPI->RAI " << reopenedRAI->GetOrigin()
-//    << std::endl;
-//  std::cout << "re-opened RAI->LPI n" << reopenedLPI->GetOrigin()
-//    << std::endl;
-//  return 0;
-//}
