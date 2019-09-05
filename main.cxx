@@ -102,6 +102,38 @@ std::pair< std::string, typename TImageType::Pointer > GetImageOrientation(const
   return std::make_pair(originalOrientation, outputImage);
 }
 
+/// code from mihail.isakov
+template<typename T> 
+bool orient_filter(
+  const typename T::Pointer & image,
+  typename T::Pointer & out_image,
+  int &originalOrientation,
+  int f)
+{
+  if (image.IsNull()) return false;
+  typedef itk::OrientImageFilter<T, T> OrientImageFilterType;
+  typename OrientImageFilterType::Pointer filter = OrientImageFilterType::New();
+  try
+  {
+    filter->SetInput(image);
+    filter->UseImageDirectionOn();
+    filter->SetDesiredCoordinateOrientation(
+      static_cast<itk::SpatialOrientation::ValidCoordinateOrientationFlags>(f));
+    filter->Update();
+    out_image = filter->GetOutput();
+  }
+  catch (itk::ExceptionObject & ex)
+  {
+    std::cout << ex.GetDescription() << std::endl;
+    return false;
+  }
+  if (out_image.IsNotNull()) out_image->DisconnectPipeline();
+  else return false;
+  
+  originalOrientation = filter->GetGivenCoordinateOrientation();
+  return true;
+}
+
 int main(int argc, char** argv)
 {
   if (argc < 2 || argc > 3)
@@ -172,12 +204,12 @@ int main(int argc, char** argv)
 
   std::cout << "Oriented Image [RAI] Raw Properties:\n";
   std::cout << "\tOrigin: " << output.second->GetOrigin() << "\n"
-    << "\tDirection Cosines: \n" << output.second->GetDirection() << "\n"
+    //<< "\tDirection Cosines: \n" << output.second->GetDirection() << "\n"
     ;
 
   std::cout << "Oriented Image [RAI] FromFile Properties:\n";
   std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
-    << "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
+    //<< "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
     ;
 
   std::cout << "Re-Oriented Image [LPI] - from Raw RAI Properties:\n";
@@ -189,6 +221,58 @@ int main(int argc, char** argv)
   std::cout << "\tOrigin: " << inputImage_rai_verify_original_fromFile->GetOrigin() << "\n"
     //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
     ;
+
+  /// testing mihail's code
+  ImageTypeFloat3D::Pointer orientedImage_rai_m, orientedImage_rai_lpi_m, orientedImage_rai_lpi_fromFile_m;
+  int originalOrintation_m, shouldGetRAI;
+  auto temp1 = orient_filter< ImageTypeFloat3D >(inputImage, orientedImage_rai_m, originalOrintation_m, itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+  auto temp2 = orient_filter< ImageTypeFloat3D >(orientedImage_rai_m, orientedImage_rai_lpi_m, shouldGetRAI, originalOrintation_m);
+
+  auto writer_2 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
+  writer_2->SetFileName("test_m.nii.gz");
+  writer_2->SetInput(orientedImage_rai_m);
+  try
+  {
+    writer_2->Update();
+  }
+  catch (const std::exception&e)
+  {
+    std::cerr << "Couldn't write the image: " << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
+
+  auto reader_3 = itk::ImageFileReader< ImageTypeFloat3D >::New();
+  reader_3->SetFileName("test_m.nii.gz");
+  reader_3->Update(); // we know that the image at this stage 'should' be valid
+
+  auto temp3 = orient_filter< ImageTypeFloat3D >(reader_3->GetOutput(), orientedImage_rai_lpi_fromFile_m, shouldGetRAI, originalOrintation_m);
+
+  std::cout << "[M] Original Image Properties:\n";
+  std::cout << "\tOrigin: " << inputImage->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage->GetDirection() << "\n"
+    ;
+
+  std::cout << "[M] Oriented Image [RAI] Raw Properties:\n";
+  std::cout << "\tOrigin: " << orientedImage_rai_m->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: \n" << orientedImage_rai_m->GetDirection() << "\n"
+    ;
+
+  std::cout << "[M] Oriented Image [RAI] FromFile Properties:\n";
+  std::cout << "\tOrigin: " << inputImage_rai_verify->GetOrigin() << "\n"
+    //<< "\tDirection Cosines:\n" << inputImage_rai_verify->GetDirection() << "\n"
+    ;
+
+  std::cout << "[M] Re-Oriented Image [LPI] - from Raw RAI Properties:\n";
+  std::cout << "\tOrigin: " << reader_3->GetOutput()->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
+    ;
+
+  std::cout << "[M] Re-Oriented Image [LPI] - from FromFile RAI Properties:\n";
+  std::cout << "\tOrigin: " << orientedImage_rai_lpi_fromFile_m->GetOrigin() << "\n"
+    //<< "\tDirection Cosines: " << inputImage_rai_verify_original->GetDirection() << "\n"
+    ;
+
+  /// testing mihail's code
 
   std::cout << "Finished successfully.\n";
   return EXIT_SUCCESS;
