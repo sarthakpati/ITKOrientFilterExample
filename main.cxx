@@ -170,13 +170,17 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
   std::cout << "Original Orientation: " << output.first << "\n";
-  
-  //outputImageFile = "oriented.img"; // doesn't work
-  //outputImageFile = "oriented.nii.gz"; // doesn't work
-  //outputImageFile = "oriented.mha"; // works
-  outputImageFile = "oriented.nrrd"; // works
+
+  std::string ext;
+  //ext = ".img"; // doesn't work
+  //ext = ".nii.gz"; // doesn't work
+  //ext = ".vtk"; // doesn't work
+  //ext = ".mha"; // works
+  //ext = ".nrrd"; // works
+  ext = ".mhd.gz"; // current test
+  outputImageFile = "rai"; 
   auto writer_1 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
-  writer_1->SetFileName(outputImageFile);
+  writer_1->SetFileName(outputImageFile + ext);
   writer_1->SetInput(output.second);
   try
   {
@@ -190,7 +194,7 @@ int main(int argc, char** argv)
 
   std::cout << "Started verification.\n";
   auto reader_2 = itk::ImageFileReader< ImageTypeFloat3D >::New();
-  reader_2->SetFileName(outputImageFile);
+  reader_2->SetFileName(outputImageFile + ext);
   reader_2->Update(); // we know that the image at this stage 'should' be valid
 
   auto inputImage_rai_verify = reader_2->GetOutput();
@@ -200,6 +204,12 @@ int main(int argc, char** argv)
 
   auto inputImage_rai_verify_original_fromRaw = output_verify_fromRaw.second;
   auto inputImage_rai_verify_original_fromFile = output_verify_fromFile.second;
+
+  outputImageFile = "rai-lpi";
+  auto writer_2 = itk::ImageFileWriter< ImageTypeFloat3D >::New();
+  writer_2->SetFileName(outputImageFile + ext);
+  writer_2->SetInput(inputImage_rai_verify_original_fromFile);
+  writer_2->Update();
 
   std::cout << "Original Image Properties:\n";
   std::cout << "\tOrigin: " << inputImage->GetOrigin() << "\n" 
